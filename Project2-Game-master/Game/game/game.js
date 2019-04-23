@@ -3,56 +3,91 @@
 // ------------- Snake Game------------- //
 // Project ----------------------------- //
 // Jonathan Ismail, Andrew Dorokhine --- //
-// First draft ------------------------- //
+// ------------------------------------- //
 // ------------------------------------- //
 // SOURCES : http://buildnewgames.com/webgl-threejs/
 
 // scene object variables
-var renderer, scene, closeCamera, backCamera, pointLight, spotLight;
+var renderer, scene, closeCamera, farCamera, pointLight, spotLight;
 
 // field variables
 var fieldWidth = 400, fieldHeight = 200;
 
-// paddle variables
-var paddleWidth, paddleHeight, paddleDepth, paddleQuality;
-var paddle1DirY = 0, paddle2DirY = 0, paddleSpeed = 3;
-
 // ball variables
-var ball, ball2, ball3, ball4,ball5, paddle1, paddle2, pickup;
+var ball, ball2, ball3, ball4,ball5, pickup;
 var ballDirX = 1, ballDirY = 0, ballSpeed = 1;
-var ball2DirX = -0.7, ball2DirY = 0.5, ball2Speed = 1; //change back to 1 when not debugging
-var ball3DirX = -0.7, ball3DirY = 0.5, ball3Speed = 1; //change back to 1 when not debugging
-var ball4DirX = -0.7, ball4DirY = 0.5, ball3Speed = 1; //change back to 1 when not debugging
-var ball5DirX = -0.7, ball5DirY = 0.5, ball3Speed = 1; //change back to 1 when not debugging
+var ball2DirX = -0.7, ball2DirY = 0.5, ball2Speed = 1; 
+var ball3DirX = -0.7, ball3DirY = 0.5, ball3Speed = 1; 
+var ball4DirX = -0.7, ball4DirY = 0.5, ball3Speed = 1; 
+var ball5DirX = -0.7, ball5DirY = 0.5, ball3Speed = 1; 
+var ball6DirX = -0.7, ball6DirY = 0.5, ball3Speed = 1; 
 
+var xballDirX = -0.7, xballDirY = 0.5, xballSpeed = 1; 
+var xball2DirX = -0.7, xball2DirY = 0.5; 
+var xball3DirX = -0.7, xball3DirY = 0.5; 
+var xball4DirX = -0.7, xball4DirY = 0.5;
+var xball5DirX = -0.7, xball5DirY = 0.5;
+var xball6DirX = -0.7, xball6DirY = 0.5;
+var xball7DirX = -0.7, xball7DirY = 0.5;
+var xball8DirX = -0.7, xball8DirY = 0.5;
+var xball9DirX = -0.7, xball9DirY = 0.5;
+var xball10DirX = -0.7, xball10DirY = 0.5;
 
+var count = 0;
+
+var xball, xball2, xball3, xball4, xball5, xball6, xball7, xball8, xball9, xball10;
+var ballarray = [xball, xball2, xball3, xball4, xball5, xball6, xball7, xball8, xball9, xball10];
+var ballXarray = [xballDirX,xball2DirX,xball3DirX,xball4DirX,xball5DirX,xball6DirX,xball7DirX,xball8DirX,xball9DirX,xball10DirX];
+var ballYarray = [xballDirY,xball2DirY,xball3DirY,xball4DirY,xball5DirY,xball6DirY,xball7DirY,xball8DirY,xball9DirY,xball10DirY];
+
+var ballXcollision1, ballXcollision2, ballXcollision3, ballXcollision4, ballXcollision5, ballXcollision6, ballXcollision7, ballXcollision8, ballXcollision9, ballXcollision10;
+var ballcollisionarray = [ballXcollision1, ballXcollision2, ballXcollision3, ballXcollision4, ballXcollision5, ballXcollision6, ballXcollision7, ballXcollision8, ballXcollision9, ballXcollision10];
+
+var balltrue = false;
 // game-related variables
-var score = 0, score2 = 0;
-var camCheck = 0;
-// you can change this to any positive whole number
-var maxScore = 7;
-
-// set opponent reflexes (0 - easiest, 1 - hardest)
-var difficulty = 0.2;
+var score = 0;
 
 // ------------------------------------- //
 // ------- GAME FUNCTIONS -------------- //
 // ------------------------------------- //
 
 function setup()
-{
-    // update the board to reflect the max score for match win
-    //document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + " wins!";
-    
-    // now reset player and opponent scores
+{ 
+    // reset player score
     score1 = 0;
-    score2 = 0;
     
     // set up all the 3D objects in the scene
     createScene();
     
     // and let's get cracking!
     draw();
+}
+function addball(){
+    var radius = 5,
+    segments = 6,
+    rings = 6;
+    var i;
+
+    for (i = 0; i < 11; i++) 
+	{
+		var sphereMaterial6 =
+		new THREE.MeshPhongMaterial({color: 0xFF0000});
+		ballarray[i] = new THREE.Mesh(new THREE.SphereGeometry(
+                                                            radius,
+                                                            segments,
+                                                            rings),
+															sphereMaterial6);
+		var temp = getRandomArbitrary(-190, 190);
+		var temp2 = getRandomArbitrary(-95, 95);
+        
+        
+		ballarray[i].position.x = temp;
+		ballarray[i].position.y = temp2;
+		// set ball above the table surface
+		ballarray[i].position.z = radius;
+		ballarray[i].receiveShadow = true;
+		ballarray[i].castShadow = true;
+	}
 }
 
 function createScene()
@@ -87,8 +122,7 @@ function createScene()
     var planeWidth = fieldWidth,
     planeHeight = fieldHeight,
     planeQuality = 100;
-    
-    
+     
     // create the plane's material
     var planeMaterial =
     new THREE.MeshLambertMaterial({color: 0x4D4B4B});
@@ -120,6 +154,7 @@ function createScene()
         planeQuality,
         1),
         tableMaterial);
+		
     table.position.z = -51;    // we sink the table into the ground by 50 units. The extra 1 is so the plane can be seen
     scene.add(table);
     table.receiveShadow = true;
@@ -132,19 +167,19 @@ function createScene()
     
     // // create the sphere's material
     var sphereMaterial =
-    new THREE.MeshLambertMaterial({color: 0xD43001});
+    new THREE.MeshStandardMaterial({color: 0xD43001});
 	
 	var sphereMaterial2 =
-    new THREE.MeshLambertMaterial({color: 0xFF0000});
+    new THREE.MeshPhongMaterial({color: 0xFF0000});
     
     var sphereMaterial3 =
-    new THREE.MeshLambertMaterial({color: 0xFF0000});
+    new THREE.MeshPhongMaterial({color: 0xFF0000});
     
     var sphereMaterial4 =
-    new THREE.MeshLambertMaterial({color: 0xFF0000});
+    new THREE.MeshPhongMaterial({color: 0xFF0000});
     
     var sphereMaterial5 =
-    new THREE.MeshLambertMaterial({color: 0xFF0000});
+    new THREE.MeshPhongMaterial({color: 0xFF0000});
 	
 	var boxMaterial =
     new THREE.MeshLambertMaterial({color: 0x00FFFF});
@@ -166,19 +201,19 @@ function createScene()
                                                     radius,
                                                     segments,
                                                     rings),
-                           sphereMaterial3);
+													sphereMaterial3);
     
     ball4 = new THREE.Mesh(new THREE.SphereGeometry(
                                                     radius,
                                                     segments,
                                                     rings),
-                           sphereMaterial4);
+													sphereMaterial4);
     
     ball5 = new THREE.Mesh(new THREE.SphereGeometry(
                                                     radius,
                                                     segments,
                                                     rings),
-                           sphereMaterial5);
+													sphereMaterial5);
     
 		
 	pickup = new THREE.Mesh(new THREE.BoxGeometry(
@@ -186,7 +221,8 @@ function createScene()
 		5,
 		5),
 		boxMaterial);
-// ----------------CAMERAS-----------------------
+		
+	// ----------------CAMERAS-----------------------
 	closeCamera =
     new THREE.PerspectiveCamera(
                                 VIEW_ANGLE,
@@ -200,24 +236,21 @@ function createScene()
     // set a default position for the camera
     // not doing this somehow messes up shadow rendering
     closeCamera.position.z = 320;
-
 		
-	backCamera =
+	farCamera =
     new THREE.PerspectiveCamera(
                                 50,
                                 ASPECT,
                                 NEAR,
                                 FAR);
-	//scene = new THREE.Scene();
     
     // add the camera to the scene
-    ball.add(backCamera);
-	
-    
+    ball.add(farCamera);
+	    
     // set a default position for the camera
     // not doing this somehow messes up shadow rendering
-	backCamera.position.z = 320;
-    
+	farCamera.position.z = 320;
+	  
     // // add the sphere to the scene
     scene.add(ball);
 	scene.add(ball2);
@@ -264,8 +297,10 @@ function createScene()
     
     // x range {-190, 190}
     // y range {-95, 95}
-	pickup.position.x = 50;
-    pickup.position.y = 0;
+	var temp = getRandomArbitrary(-190, 190);
+    var temp2 = getRandomArbitrary(-95, 95);
+    pickup.position.x = temp;
+    pickup.position.y = temp2;
 	pickup.position.z = 5;
     
     // finally we finish by adding a ground plane
@@ -314,6 +349,24 @@ function createScene()
     spotLight2.castShadow = true;
     scene.add(spotLight2);
     
+    
+        var sphereMaterial6 =
+        new THREE.MeshLambertMaterial({color: 0xFF0000});
+        ball6 = new THREE.Mesh(new THREE.SphereGeometry(
+                                                        radius,
+                                                        segments,
+                                                        rings),
+                               sphereMaterial6);
+    
+        
+        ball6.position.x = 100;
+        ball6.position.y = 0;
+        // set ball above the table surface
+        ball6.position.z = radius;
+        ball6.receiveShadow = true;
+        ball6.castShadow = true;
+	
+    addball();
     // MAGIC SHADOW CREATOR DELUXE EDITION with Lights PackTM DLC
     renderer.shadowMapEnabled = true;
 }
@@ -335,9 +388,9 @@ function cameraPhysics()
     closeCamera.position.y = 125;
     closeCamera.position.z = 245;
 	
-	backCamera.position.x = 0;
-    backCamera.position.y = 100;
-    backCamera.position.z = 75;
+	farCamera.position.x = 0;
+    farCamera.position.y = 100;
+    farCamera.position.z = 75;
 	
     //console.log(camera.position.y);
     // rotate to face towards the opponent
@@ -345,13 +398,38 @@ function cameraPhysics()
     closeCamera.rotation.y = 0;
     closeCamera.rotation.z = 3.14224;
 	
-	backCamera.rotation.x = -1;
-    backCamera.rotation.y = 0;
-    backCamera.rotation.z = 3.14224;
+	farCamera.rotation.x = -1;
+    farCamera.rotation.y = 0;
+    farCamera.rotation.z = 3.14224;
 }
 
 function ballPhysics()
 {
+    for (i = 0; i < count; i++) {
+        if (ballarray[i].position.x <= -fieldWidth/2)
+        {
+            ballXarray[i] = -ballXarray[i];
+        }
+        // if ball goes off the left side (CPU's side)
+        if (ballarray[i].position.x >= fieldWidth/2)
+        {
+            ballXarray[i] = -ballXarray[i];
+        }
+        // if ball goes off the top side (side of table)
+        if (ballarray[i].position.y <= -fieldHeight/2)
+        {
+            ballYarray[i] = -ballYarray[i];
+        }
+        // if ball goes off the bottom side (side of table)
+        if (ballarray[i].position.y >= fieldHeight/2)
+        {
+            ballYarray[i] = -ballYarray[i];
+        }
+        ballarray[i].position.x += ballXarray[i] * ballSpeed;
+        ballarray[i].position.y += ballYarray[i] * ballSpeed;
+               
+    }
+    
     if (ball.position.x <= -fieldWidth/2)
     {
         ballDirX = -ballDirX;
@@ -461,7 +539,7 @@ function ballPhysics()
 	if(collision === true)
 	{
 		scene.remove(ball);
-        document.getElementById("scores").innerHTML = "HighScore: "+score;
+        document.getElementById("scores").innerHTML = "Final Score: "+score;
 		
 		alert("GAME OVER");
 		document.location.reload();
@@ -473,7 +551,7 @@ function ballPhysics()
     if(collision === true)
     {
         scene.remove(ball);
-        document.getElementById("scores").innerHTML = "HighScore: "+score;
+        document.getElementById("scores").innerHTML = "Final Score: "+score;
 		
 		alert("GAME OVER");
 		document.location.reload();
@@ -485,8 +563,8 @@ function ballPhysics()
     if(collision === true)
     {
         scene.remove(ball);
-        document.getElementById("scores").innerHTML = "HighScore: "+score;
-
+        document.getElementById("scores").innerHTML = "Final Score: "+score;
+		
 		alert("GAME OVER");
 		document.location.reload();
 		clearInterval(interval);
@@ -497,11 +575,24 @@ function ballPhysics()
     if(collision === true)
     {
         scene.remove(ball);
-        document.getElementById("scores").innerHTML = "HighScore: "+score;
+        document.getElementById("scores").innerHTML = "Final Score: "+score;
 		
 		alert("GAME OVER");
 		document.location.reload();
 		clearInterval(interval);
+    }
+	
+	for (i = 0; i < count; i++) {
+        ballcollisionarray[i] = new THREE.Box3().setFromObject(ballarray[i]);
+        var collision = ballBB.intersectsBox(ballcollisionarray[i]);
+        if(collision === true)
+        {
+            scene.remove(ball);
+            document.getElementById("scores").innerHTML = "Final Score: "+score;
+			alert("GAME OVER");
+			document.location.reload();
+			clearInterval(interval);
+        }
     }
     
     // collision variables
@@ -510,15 +601,25 @@ function ballPhysics()
     if(collision === true)
     {
         score += 10;
+		if(score === 100) 
+		{
+			document.getElementById("scores").innerHTML = "Final Score: "+score;
+			alert("CONGRATULATIONS! YOU WIN!");
+			document.location.reload();
+			clearInterval(interval);
+		}
         var temp = getRandomArbitrary(-190, 190);
         var temp2 = getRandomArbitrary(-95, 95);
         pickup.position.x = temp;
         pickup.position.y = temp2;
         pickup.position.z = 5;
-        ball2Speed += 0.5;
+        ball2Speed += 0.05;
         document.getElementById("scores").innerHTML = score;
+        balltrue = true;
+        console.log(balltrue);
+        
     }
-    
+
     // update ball position over time
     ball.position.x += ballDirX * ballSpeed;
     ball.position.y += ballDirY * ballSpeed;
@@ -557,42 +658,28 @@ function ballPhysics()
     }
 }
 
-
 function playerMovement()
 {
     // move left
     if (Key.isDown(Key.A))
     {
-        // if paddle is not touching the side of table
-        // we move
-        //ballDirY -= 0.3;
 		ballDirX = 1;
-		ballDirY = 0;
-        
+		ballDirY = 0;       
     }
 	
 	if (Key.isDown(Key.D))
     {
-        // if paddle is not touching the side of table
-        // we move
-        //ballDirY += 0.3;
 		ballDirX = -1;
         ballDirY = 0;
     }
 	if (Key.isDown(Key.W))
     {
-        // if paddle is not touching the side of table
-        // we move
-        //ballDirY -= 0.3;
 		ballDirY = -1;
         ballDirX = 0;
     }
 	
 	if (Key.isDown(Key.S))
     {
-        // if paddle is not touching the side of table
-        // we move
-        //ballDirY += 0.3;
 		ballDirY = 1;
         ballDirX = 0;
     }
@@ -602,20 +689,26 @@ function playerMovement()
 function draw()
 {
     // draw THREE.JS scene
+    if(balltrue == true && count < 11){
+        
+        scene.add(ballarray[count]);
+        balltrue = false;
+        count +=1;
+    }
+    
 	if (Key.isDown(Key.X))
     {
-		renderer.render(scene, backCamera);	
+		renderer.render(scene, closeCamera);	
     }
 	else
 	{
-		renderer.render(scene, closeCamera);
+		renderer.render(scene, farCamera);
 	} 
-    // loop the draw() function	
-    requestAnimationFrame(draw);	
 	
+    // loop the draw() function
+    requestAnimationFrame(draw);
     cameraPhysics();
     ballPhysics();
     playerMovement()
-    // process game logic
-   
+    // process game logic  
 }
