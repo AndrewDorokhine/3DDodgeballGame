@@ -1,1 +1,1 @@
-# Project2-Game
+This is our 3D Dodgeball Game made in three.js as the final project for Introduction to Graphics, CMPT370. The game plays in-browser and is controlled with WASD, and can also change the camera view with the X key.
